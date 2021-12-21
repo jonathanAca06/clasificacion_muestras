@@ -2,15 +2,16 @@
 # Programa para el uso de la api visrus total y la clasificaioón
 # muestras (5540)
 ##
+import datetime
 import time
 import pymysql
 'Libreria para le manejo de archivos JSON'
 import json
-import base64
 import argparse
 import requests
-import pickle
 import re
+
+
 
 
 class DataBase:
@@ -68,6 +69,11 @@ class DataBase:
         except Exception as e:
             raise
         return list_muestras
+
+    def guardar_datos(self, id ):
+       print("GUARDAR LOS DATOS")
+
+
 
 
 # DB.select_all_muestras()
@@ -128,24 +134,38 @@ def concatenar(url,hash):
 
 def main():
     DB = DataBase()
+    fecha = datetime.datetime.today()
     # DB.select_muestra(1)
     aux_list = []
     aux_campos = []
     aux_campos = DB.select_muestra(1)
+    data = {}
+    data['muestras'] = []
     #print("Funcion->Id:", aux_campos[0])
     aux_list = DB.select_all_muestras()
     print("Dato 1:", aux_list[0])
     aux_url= concatenar(url,aux_list[0])
     print("url: " , aux_url)
-    response = requests.request("GET",aux_url, headers=headers) 
-    query_dict = json.loads(response.content)
-    print("Dicionario del query:\n", query_dict.keys())
-    familia_query = query_dict['data'][0]['attributes']['popular_threat_classification']['suggested_threat_label']
-    print("Diccionario version 1:\n", familia_query)
+    response_json = requests.request("GET",aux_url, headers=headers) 
+    consulta_dict = json.loads(response_json.content)
+    #print("Dicionario del query:\n", consulta_dict.keys())
+    
+    familia_query = consulta_dict['data'][0]['attributes']['popular_threat_classification']['suggested_threat_label']
+    print("Diccionario version 1: ", familia_query)
+    
     for key  in  familias_dic:
-        if(familias_dic[key] == familia_query):
-            print('concide o tiene una subcadena')
-
+        if re.search(familias_dic[key],familia_query):
+            #print('coincidecia o tiene una subcadena')
+            data['muestras'].append({
+                'id'          : aux_list[0],
+                'virus total' : familia_query,
+                'familia'     : familias_dic[key].upper(),
+                'fecha'       : str(fecha)})
+            file_name = str(fecha) + '.json'
+            with open(file_name,'w') as file:
+                json.dump(data,file, indent=4)
+    
+        
 
 
 
