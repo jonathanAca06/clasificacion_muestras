@@ -42,7 +42,7 @@ class DataBase:
         return campos
    
     #Seleccion de datos con muestras con limites: de n a n
-    def seleccion_muestra_n_n(self, tabla, valor_inical, valor_final):
+    def seleccion_muestras_n_n(self, tabla, valor_inical, valor_final):
         limites = (valor_inical, valor_final)
         if tabla == 0:
             query = 'SELECT id, file_name, md5, sha1, sha256 FROM `Drebin-00000` LIMIT %s,%s'
@@ -122,19 +122,41 @@ class DataBase:
             raise
         return list_muestras
 
-    def mostrar_datos_clasificados(self, id):
+    ##
+    # Funcion que muestra los valores de las tablas. 
+    # 
+    ## 
+    def mostrar_datos_clasificados(self, tabla, id):
+        
         print("Mostrar datos")
-        query = 'SELECT muestra, resultado, familia, consulta_archivo, sha256 FROM `Drebin-00000` WHERE id = {}'.format(
+        if tabla == 0:
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00000` WHERE id = {}'.format(
             id)
+        elif tabla == 1:
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00001` WHERE id = {}'.format(
+            id)
+        elif tabla == 2:
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00002` WHERE id = {}'.format(
+            id)
+        elif tabla == 3:
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00003` WHERE id = {}'.format(
+            id)
+        elif tabla == 4:
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00004` WHERE id = {}'.format(
+            id)
+        else:
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00005` WHERE id = {}'.format(
+            id) 
         try:
             self.cursor.execute(query)
             muestra = self.cursor.fetchone()
             campos = []
-            campos.append(muestra[0])
+            
             campos.append(muestra[1])
             campos.append(muestra[2])
             campos.append(muestra[3])
-            campos.append(muestra[4])
+            campos.append(muestra[4]) 
+
         except Exception as e:
             raise
         return campos
@@ -248,11 +270,11 @@ def main():
     
     
     opc = 0
-    while opc != 4 :
-            print("Opciones: \n 1.- Funcion de realizar las consultas primero 100 \n 2.- Funcion de realizar las consultas de un punto inical a final \n 3.- Limpiar la tabla de las consultas \n 4.- Salir ")
+    while opc != 's' :
+            print("Opciones: \n 1.- Funcion de realizar las consultas primero 100 \n 2.- Funcion de realizar las consultas de un punto inical a final \n 3.- Limpiar la tabla de las consultas \n Salir (s) ")
             opc = input("Seleccione una opcion: ")
-            opc = int(opc)
-            if(opc == 1):
+           
+            if(opc == '1'):
                 print("Opcion 1")
                 tabla = input("Seleccione una tabla de 0 - 5: ")
                 tabla = int(tabla)
@@ -275,20 +297,25 @@ def main():
                             print(familias_dic[key].upper())
                             DB.guardar_datos_clasificacion_familias(tabla,list, familia_query, familias_dic[key].upper(), response_json.content) 
                     if familia == True:
-                        DB.guardar_datos_clasificacion_familias(tabla,list, familia_query, "NINGUNA", response_json.content)
                         print("NINGUNA") 
+                        DB.guardar_datos_clasificacion_familias(tabla,list, familia_query, "NINGUNA", response_json.content)
                     temporizador()                       
                 print("fin")
             
-            elif(opc == 2):
+            elif(opc == '2'):
                 print("Opcion 2")
                 tabla = input("Seleccione una tabla de 0 - 5: ")
                 tabla = int(tabla)
                 inicial = input("Inicio: ")
                 inicial = int(inicial) 
-                final = input("Final: ")
-                final = int(final)
-                aux_lista = DB.seleccion_muestras_n_n(tabla,inicial,final)
+                cantidad = input("Cantidad: ")
+                cantidad = int(cantidad)
+                if cantidad < 500:
+                    print("Cantidad valida")
+                else:
+                    print("Candidad invalida")
+                    break 
+                aux_lista = DB.seleccion_muestras_n_n(tabla,inicial,cantidad)
                 
                 for lista in aux_lista:
                     a = a + 1
@@ -307,18 +334,41 @@ def main():
                             print(familias_dic[key].upper())
                             DB.guardar_datos_clasificacion_familias(tabla,lista, familia_query, familias_dic[key].upper(), response_json.content) 
                     if familia == True:
-                        DB.guardar_datos_clasificacion_familias(tabla,lista, familia_query, "NINGUNA", response_json.content)
                         print("NINGUNA") 
+                        DB.guardar_datos_clasificacion_familias(tabla,lista, familia_query, "NINGUNA", response_json.content)
+                        
                     temporizador()
 
             
-            elif(opc == 3):
+            elif(opc == '3'):
                 print("Opcion 3")
                 tabla = input("Seleccione una tabla de 0 - 5: ")
                 tabla = int(tabla)
                 DB.elimanar_registros(tabla)
 
-            elif(opc == 4):
+            elif(opc == '4'):
+                print('Opcion 4')
+                #
+                tabla = input("Seleccionar tabla: 0-5: ")
+                tabla = int(tabla)
+                id = input("ID MUestra: ")
+                id = int(id)
+                
+                aux_list = DB.mostrar_datos_clasificados(tabla, id)
+                print("Muestra: ")
+                print(aux_list[0])
+    
+                print("Resultado: ")
+                print(aux_list[1])
+
+                print("Familia: ")
+                print(aux_list[2])
+
+                print("Archivo JSON: ")
+                consulta_json = json.load(aux_list[3].text)
+                print(consulta_json)
+            
+            elif(opc == 's'):
                 print("Opcion 4: Salir")
             else:
                 print("No hay opcion para ese dato")
