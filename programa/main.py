@@ -296,7 +296,7 @@ def main():
     
     opc = 0
     while opc != 's' :
-            print("Opciones: \n 1.- Funcion de realizar las consultas primero 100 \n 2.- Funcion de realizar las consultas de un punto inical y una cantidad \n 3.- Limpiar la tabla de las consultas \n Salir (s) ")
+            print("Opciones: \n 1) Funcion de realizar las consultas primero 100 \n 2) Funcion de realizar las consultas de un punto inical y una cantidad \n 3) Limpiar la tabla de las consultas \n Salir (s) ")
             opc = input("Seleccione una opcion: ")
            
             if(opc == '1'):
@@ -367,7 +367,7 @@ def main():
                             DB.guardar_datos_clasificacion_familias(tabla,lista, familia_query, "NINGUNA", response_json.content)
                         
                         temporizador()
-                        
+
             elif(opc == '3'):
                 print("Opcion 3")
                 tabla = input("Seleccione una tabla de 0 - 5: ")
