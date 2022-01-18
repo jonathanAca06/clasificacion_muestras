@@ -62,7 +62,7 @@ class DataBase:
             muestras = self.cursor.fetchall()
             lista_muestra = []
             for muestra in muestras:
-                lista_muestra.append(muestra[2])
+                lista_muestra.append(muestra[4])
         except Exception as e:
             raise
         
@@ -90,7 +90,7 @@ class DataBase:
             muestras = self.cursor.fetchall()
             lista_muestra = []
             for muestra in muestras:
-                lista_muestra.append(muestra[2])
+                lista_muestra.append(muestra[4])
         except Exception as e:
             raise
         
@@ -117,7 +117,7 @@ class DataBase:
             list_muestras = []
             n = 0
             for muestra in muestras:
-                list_muestras.append(muestra[2])
+                list_muestras.append(muestra[4])
         except Exception as e:
             raise
         return list_muestras
@@ -152,10 +152,11 @@ class DataBase:
             muestra = self.cursor.fetchone()
             campos = []
             
+            campos.append(muestra[0]) 
             campos.append(muestra[1])
             campos.append(muestra[2])
             campos.append(muestra[3])
-            campos.append(muestra[4]) 
+            
 
         except Exception as e:
             raise
@@ -251,6 +252,30 @@ def concatenar(url,hash):
     url_full = url + hash
     return url_full
 
+def procesar_informacion(DB,aux_list,tabla):
+    print("Funcion principañ")
+    for list in aux_list:
+                    a = a + 1
+                    familia = True
+                    print("Contador: ", a)
+                    print("Muestra: ", list)
+                    aux_url= concatenar(url,list)
+                    print("url: " , aux_url)
+                    response_json = requests.request("GET",aux_url, headers=headers)
+                    consulta_dict = json.loads(response_json.content)
+                    familia_query = consulta_dict['data'][0]['attributes']['popular_threat_classification']['suggested_threat_label']
+                    print("Diccionario version 1: ", familia_query)
+                    for key in familias_dic:
+                        if re.search(familias_dic[key],familia_query):
+                            familia = False
+                            print(familias_dic[key].upper())
+                            DB.guardar_datos_clasificacion_familias(tabla,list, familia_query, familias_dic[key].upper(), response_json.content) 
+                    if familia == True:
+                        print("NINGUNA") 
+                        DB.guardar_datos_clasificacion_familias(tabla,list, familia_query, "NINGUNA", response_json.content)
+                    temporizador()
+
+
 
 
 def generar_archivo_bitacora():
@@ -271,7 +296,7 @@ def main():
     
     opc = 0
     while opc != 's' :
-            print("Opciones: \n 1.- Funcion de realizar las consultas primero 100 \n 2.- Funcion de realizar las consultas de un punto inical a final \n 3.- Limpiar la tabla de las consultas \n Salir (s) ")
+            print("Opciones: \n 1.- Funcion de realizar las consultas primero 100 \n 2.- Funcion de realizar las consultas de un punto inical y una cantidad \n 3.- Limpiar la tabla de las consultas \n Salir (s) ")
             opc = input("Seleccione una opcion: ")
            
             if(opc == '1'):
@@ -317,29 +342,34 @@ def main():
                     break 
                 aux_lista = DB.seleccion_muestras_n_n(tabla,inicial,cantidad)
                 
-                for lista in aux_lista:
-                    a = a + 1
-                    familia = True
-                    print("Contador: ", a)
-                    print("Muestra: ", lista)
-                    aux_url= concatenar(url,lista)
-                    print("url: " , aux_url)
-                    response_json = requests.request("GET",aux_url, headers=headers)
-                    consulta_dict = json.loads(response_json.content)
-                    familia_query = consulta_dict['data'][0]['attributes']['popular_threat_classification']['suggested_threat_label']
-                    print("Diccionario version 1: ", familia_query)
-                    for key in familias_dic:
-                        if re.search(familias_dic[key],familia_query):
-                            familia = False
-                            print(familias_dic[key].upper())
-                            DB.guardar_datos_clasificacion_familias(tabla,lista, familia_query, familias_dic[key].upper(), response_json.content) 
-                    if familia == True:
-                        print("NINGUNA") 
-                        DB.guardar_datos_clasificacion_familias(tabla,lista, familia_query, "NINGUNA", response_json.content)
+                print("Muesta: ", aux_lista[0])
+                decision = input("Deseas continuar (s o S): ")
+                
+                if decision == 's' :
+                    for lista in aux_lista:
+                        a = a + 1
+                        familia = True
+                        print("Contador: " ,cantidad,'/',a)
+                        print("Muestra: ", lista)
+                        aux_url= concatenar(url,lista)
+                        print("url: " , aux_url)
+                        response_json = requests.request("GET",aux_url, headers=headers)
+                        consulta_dict = json.loads(response_json.content)
+                        familia_query = consulta_dict['data'][0]['attributes']['popular_threat_classification']['suggested_threat_label']
+                        print("Diccionario version 1: ", familia_query)
+                        for key in familias_dic:
+                            if re.search(familias_dic[key],familia_query):
+                                familia = False
+                                print(familias_dic[key].upper())
+                                DB.guardar_datos_clasificacion_familias(tabla,lista, familia_query, familias_dic[key].upper(), response_json.content) 
+                        if familia == True:
+                            print("NINGUNA") 
+                            DB.guardar_datos_clasificacion_familias(tabla,lista, familia_query, "NINGUNA", response_json.content)
                         
-                    temporizador()
-
-            
+                        temporizador()
+                else:
+                    break
+    
             elif(opc == '3'):
                 print("Opcion 3")
                 tabla = input("Seleccione una tabla de 0 - 5: ")
@@ -365,8 +395,10 @@ def main():
                 print(aux_list[2])
 
                 print("Archivo JSON: ")
-                consulta_json = json.load(aux_list[3].text)
-                print(consulta_json)
+                arch_json = json.loads(aux_list[3])
+                print(json.dumps(arch_json['data'][0]['attributes'],indent=3))
+                
+                
             
             elif(opc == 's'):
                 print("Opcion 4: Salir")
