@@ -343,7 +343,7 @@ def main():
                 aux_lista = DB.seleccion_muestras_n_n(tabla,inicial,cantidad)
                 
                 print("Muesta: ", aux_lista[0])
-                decision = input("Deseas continuar (s o S): ")
+                decision = input("Deseas continuar (s): ")
                 
                 if decision == 's' :
                     for lista in aux_lista:
@@ -367,9 +367,7 @@ def main():
                             DB.guardar_datos_clasificacion_familias(tabla,lista, familia_query, "NINGUNA", response_json.content)
                         
                         temporizador()
-                else:
-                    break
-    
+                        
             elif(opc == '3'):
                 print("Opcion 3")
                 tabla = input("Seleccione una tabla de 0 - 5: ")
