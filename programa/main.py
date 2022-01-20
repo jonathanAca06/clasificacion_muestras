@@ -5,6 +5,7 @@
 from pathlib import Path
 import datetime
 import time
+
 import pymysql
 'Libreria para le manejo de archivos JSON'
 import json
@@ -127,26 +128,19 @@ class DataBase:
     # 
     ## 
     def mostrar_datos_clasificados(self, tabla, id):
-        
         print("Mostrar datos")
         if tabla == 0:
-            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00000` WHERE id = {}'.format(
-            id)
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00000` WHERE id = {}'.format(id)
         elif tabla == 1:
-            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00001` WHERE id = {}'.format(
-            id)
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00001` WHERE id = {}'.format(id)
         elif tabla == 2:
-            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00002` WHERE id = {}'.format(
-            id)
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00002` WHERE id = {}'.format(id)
         elif tabla == 3:
-            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00003` WHERE id = {}'.format(
-            id)
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00003` WHERE id = {}'.format(id)
         elif tabla == 4:
-            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00004` WHERE id = {}'.format(
-            id)
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00004` WHERE id = {}'.format(id)
         else:
-            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00005` WHERE id = {}'.format(
-            id) 
+            query = 'SELECT muestra, resultado, familia, consulta_json FROM `VirusTotal-00005` WHERE id = {}'.format(id) 
         try:
             self.cursor.execute(query)
             muestra = self.cursor.fetchone()
@@ -156,8 +150,6 @@ class DataBase:
             campos.append(muestra[1])
             campos.append(muestra[2])
             campos.append(muestra[3])
-            
-
         except Exception as e:
             raise
         return campos
@@ -206,6 +198,17 @@ class DataBase:
         except Exception as e:
             raise
 
+    def contar_registros_muestras(self, tabla):
+        print("Funcion count")
+        query = "SELECT count(*) FROM `%s`"
+        try:
+            self.cursor.execute(query,tabla)
+            cantidad = self.cursor.fetchone()
+ 
+        except Exception as e:
+            raise
+        return cantidad
+
     def close(self):
         self.conexion.close()
 
@@ -245,6 +248,24 @@ familias_dic = {
     'T' : 'smsreg'
 }
 
+dict_debian = {
+    0 : 'Drebin-00000',
+    1 : 'Drebin-00001',
+    2 : 'Drebin-00002',
+    3 : 'Drebin-00003',
+    4 : 'Drebin-00004',
+    5 : 'Drebin-00005'
+}
+
+dict_virustotal = {
+    0 : 'VirusTotal-00000',
+    1 : 'VirusTotal-00001',
+    2 : 'VirusTotal-00002',
+    3 : 'VirusTotal-00003',
+    4 : 'VirusTotal-00004',
+    5 : 'VirusTotal-00005'
+}
+
 def temporizador():
     time.sleep(20)
 
@@ -275,9 +296,6 @@ def procesar_informacion(DB,aux_list,tabla):
                         DB.guardar_datos_clasificacion_familias(tabla,list, familia_query, "NINGUNA", response_json.content)
                     temporizador()
 
-
-
-
 def generar_archivo_bitacora():
     print("Realiza la bitacoras de las consultas que se hicieron")
 
@@ -285,15 +303,8 @@ def main():
     DB = DataBase()
     fecha = datetime.datetime.today()
     aux_list = []
-    
-    a = 0
-    datos = {}
-    #aux_campos = []
-    #aux_campos = DB.select_muestra(1)
-    #data['muestras'] = []
-    # print("Funcion->Id:", aux_campos[0])
-    
-    
+    #a = 0
+    datos = {}   
     opc = 0
     while opc != 's' :
             print("Opciones: \n 1) Funcion de realizar las consultas primero 100 \n 2) Funcion de realizar las consultas de un punto inical y una cantidad \n 3) Limpiar la tabla de las consultas \n Salir (s) ")
@@ -331,6 +342,13 @@ def main():
                 print("Opcion 2")
                 tabla = input("Seleccione una tabla de 0 - 5: ")
                 tabla = int(tabla)
+                #Funcion para conocer cuantas muestras faltan o cuantas hay
+                #print(dict_virustotal[tabla])
+                #cantidad_tabla_virustotal = DB.contar_registros_muestras(dict_virustotal[tabla])
+                #cantidad_tabla_debian = DB.contar_registros_muestras(dict_debian[tabla])
+                #print("Cantidad restante es: ",cantidad_tabla_debian)
+                #print("Muestras obtenidas: ", cantidad_tabla_virustotal)
+
                 inicial = input("Inicio: ")
                 inicial = int(inicial) 
                 cantidad = input("Cantidad: ")
@@ -346,6 +364,7 @@ def main():
                 decision = input("Deseas continuar (s): ")
                 
                 if decision == 's' :
+                    a = 0
                     for lista in aux_lista:
                         a = a + 1
                         familia = True
