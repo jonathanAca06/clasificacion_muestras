@@ -217,7 +217,8 @@ clearConsole = lambda: os.system('cls' if os.name in ('nt', 'dos') else 'clear')
 
 # Variables para la autentifacion de la API
 # De virus totak
-api_key = 'ed6515a99ff5bbfc2283bf82ee26f94aa45f1b3cad58fdc5726dc2d368b9f713'
+api_key = 'ee51ce32bd4f1bc95170c5276ea73d605660d9bfe88b4c24811439859c7a9ce9'
+#api_key = 'ed6515a99ff5bbfc2283bf82ee26f94aa45f1b3cad58fdc5726dc2d368b9f713'
 url = "https://www.virustotal.com/api/v3/search?query="
 
 headers = {
@@ -395,7 +396,7 @@ def main():
 
             elif(opc == '4'):
                 print('Opcion 4')
-                #
+                
                 tabla = input("Seleccionar tabla: 0-5: ")
                 tabla = int(tabla)
                 id = input("ID MUestra: ")
@@ -414,16 +415,11 @@ def main():
                 print("Archivo JSON: ")
                 arch_json = json.loads(aux_list[3])
                 print(json.dumps(arch_json['data'][0]['attributes'],indent=3))
-                
-                
-            
+
             elif(opc == 's'):
-                print("Opcion 4: Salir")
+                print("Bye!")
             else:
                 print("No hay opcion para ese dato")
-            #clearConsole()
-
-    
-
+            
 if __name__ == '__main__':
     main()
