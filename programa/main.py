@@ -198,7 +198,7 @@ class DataBase:
         except Exception as e:
             raise
 
-    def contar_registros_muestras(self, tabla):
+    def contar_registros_muestras_tabla(self, tabla):
         print("Funcion count")
         query = "SELECT count(*) FROM `%s`"
         try:
@@ -209,6 +209,24 @@ class DataBase:
             raise
         return cantidad
 
+    def contar_registros_muestras_total(self,dict_virustotal):
+        print("Funcion count")
+        querys = []
+        cantidades = []
+        for tabla in dict_virustotal:
+            querys.append("SELECT count(*) FROM `"+ dict_virustotal [tabla]+"`")
+        
+        try:
+            for query  in querys :
+                self.cursor.execute(query)
+                cantidades.append(self.cursor.fetchone())
+ 
+        except Exception as e:
+            raise
+        return cantidades
+
+    
+
     def close(self):
         self.conexion.close()
 
@@ -218,7 +236,6 @@ clearConsole = lambda: os.system('cls' if os.name in ('nt', 'dos') else 'clear')
 # Variables para la autentifacion de la API
 # De virus totak
 api_key = 'ee51ce32bd4f1bc95170c5276ea73d605660d9bfe88b4c24811439859c7a9ce9'
-#api_key = 'ed6515a99ff5bbfc2283bf82ee26f94aa45f1b3cad58fdc5726dc2d368b9f713'
 url = "https://www.virustotal.com/api/v3/search?query="
 
 headers = {
@@ -303,9 +320,8 @@ def generar_archivo_bitacora():
 def main():
     DB = DataBase()
     fecha = datetime.datetime.today()
+    datos = {} 
     aux_list = []
-    #a = 0
-    datos = {}   
     opc = 0
     while opc != 's' :
             print("Opciones: \n 1) Funcion de realizar las consultas primero 100 \n 2) Funcion de realizar las consultas de un punto inical y una cantidad \n 3) Limpiar la tabla de las consultas \n Salir (s) ")
@@ -343,12 +359,6 @@ def main():
                 print("Opcion 2")
                 tabla = input("Seleccione una tabla de 0 - 5: ")
                 tabla = int(tabla)
-                #Funcion para conocer cuantas muestras faltan o cuantas hay
-                #print(dict_virustotal[tabla])
-                #cantidad_tabla_virustotal = DB.contar_registros_muestras(dict_virustotal[tabla])
-                #cantidad_tabla_debian = DB.contar_registros_muestras(dict_debian[tabla])
-                #print("Cantidad restante es: ",cantidad_tabla_debian)
-                #print("Muestras obtenidas: ", cantidad_tabla_virustotal)
 
                 inicial = input("Inicio: ")
                 inicial = int(inicial) 
@@ -416,10 +426,23 @@ def main():
                 arch_json = json.loads(aux_list[3])
                 print(json.dumps(arch_json['data'][0]['attributes'],indent=3))
 
+            elif(opc == '5'):
+                aux_lista = []
+                aux_lista = DB.contar_registros_muestras_total(dict_virustotal)
+                total = 0
+                i = 0
+                for cantidad in aux_lista:
+                    
+                    print("Tabla:" + dict_virustotal[i] + " Cant:" + str(cantidad[0]))
+                    i =+1
+                    total = total + cantidad[0]
+                
+                print("Cantidad total: "+ str(total))
             elif(opc == 's'):
                 print("Bye!")
+                break
             else:
-                print("No hay opcion para ese dato")
+                print("No hay opcion para ese caracter")
             
 if __name__ == '__main__':
     main()
